@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+    {% include "./s_header.html" %}
+    <body>
+        <div class="container-fluid">
+            <!-- Search and Filter Form -->
+            <form method="GET" class="w-100 mb-4">
+                <div class="row">
+                    <!-- Render the filter form here -->
+                    <div class="col">
+                        {{ form }}
+                    </div>
+                    <div class="col-auto">
+                        <!-- Submit buttons for search and clearing filters -->
+                        <input type="submit" name="action" value="Search" class="search-button">
+                        <input type="submit" name="action" value="Clear Filters" class="filter-button">
+                    </div>
+                </div>
+            </form>
+            
+            <!-- Display the total entries after filtering/searching -->
+            <p><b>{{ result_message }}</b></p>
+
+            <div class="row">
+                <!-- Loop through each course and display its details -->
+                {% for course in courses %}
+                <div class="col-md-6 col-lg-3 mb-4">
+                    <div class="card h-100">
+                        
+                        <!-- Course thumbnail image -->
+                        <img src="/media/{{ course.course_thumbnail_picture }}" class="card-img-top" alt="Course Image">
+                        
+                        <!-- Course title, clickable to the course details page -->
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">
+                                <a href="../?course_id={{ course.course_id }}">{{ course.course_name }}</a>
+                            </h5>
+                            <!-- Short description of the course -->
+                            <p class="card-text flex-grow-1">{{ course.course_description }}</p>
+                            
+                             <!-- Instructor information, shown at the bottom -->
+                            <p class="text-muted mt-auto">Instructor: {{ course.teacher.userinfo.display_name }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

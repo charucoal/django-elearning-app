@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    {% include "./t_header.html" %}
+    <body>
+        <!-- Main container for notifications -->
+        <div class="container mt-4">
+            <h2>Notifications</h2><br>
+            <div class="row">
+
+                <!-- Enrolments notifications column -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>Enrolments</strong></td></tr>
+                        <!-- Loop through notifications and display -->
+                        {% for e in enrol_notif %}
+                            <tr><td>{{ e.message }}<i class="text-end d-block" style="color: #ababab;">{{ e.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <!-- Forum Replies notifications Column -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>Forum Replies</strong></td></tr>
+                        <!-- Loop through notifications and display -->
+                        {% for f in forum_notif %}
+                            <tr><td>{{ f.message }}<i class="text-end d-block" style="color: #ababab;">{{ f.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <!-- E-meeting Updates notifications Column -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>E-meeting Updates</strong></td></tr>
+                        <!-- Loop through notifications and display -->
+                        {% for q in qna_notif %}
+                            <tr><td>{{ q.message }}<i class="text-end d-block" style="color: #ababab;">{{ q.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

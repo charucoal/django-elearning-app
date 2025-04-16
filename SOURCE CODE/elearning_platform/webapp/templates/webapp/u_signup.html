@@ -1,0 +1,41 @@
+<!-- Extends the base login template -->
+{% extends './u_login.html' %}
+{% block content %}
+<div class=" container text-center mt-3">
+    <!-- Login button for users who already have an account -->
+    <p class=" d-flex justify-content-end">
+        <a class="logout-button" href="{% url 'login' %}">Login</a>
+    </p>
+</div>
+
+<!-- Centered registration form -->
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="col-12 col-md-6 col-lg-4">
+        <h2 class="text-center mb-4">Create an account</h2>
+        <p class="text-center mb-4">Enter the following information to create your account</p>
+
+        <!-- Error message displayed -->
+        {% if messages %}
+                {% for message in messages %}
+                    <p><b>{{ message }}</b></p>
+                {% endfor %}
+        {% endif %}
+
+        <!-- Registration form with CSRF protection -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <!-- First part of the registration form - profile information -->
+                {{ register_form1.as_p }}
+            </div>
+            <div class="mb-3">
+                <!-- Second part of the registration form - username & password -->
+                {{ register_form2.as_p }}
+            </div>
+            <div class="text-center">
+                <input type="submit" value="Register" class="w-100 submit-button">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

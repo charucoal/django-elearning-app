@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    {% include "./t_header.html" %}
+    <body>
+        <!-- Main container for course management -->
+        <div class="container mt-4">
+            <h2 class="mb-3">Manage your courses here:</h2>
+
+            <!-- create new course button -->
+            <a href="{% url 'teacher-create-course' %}" class="btn mb-3">+ Create a new course</a>
+            
+            <!-- Loop to display each course in a card layout -->
+            <div class="row">
+                {% for course in courses %}
+                <div class="col-md-4 mb-4">
+                    <!-- Course card with clickable details link -->
+                    <div class="card h-100 shadow">
+                        <a href="../courses/?course_id={{ course.course_id }}" class="text-decoration-none">
+                            <!-- Course thumbnail and details -->
+                            <img src="/media/{{ course.course_thumbnail_picture }}" class="card-img-top" alt="{{ course.course_name }}" style="height: 130px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ course.course_name }}</h5>
+                                <p class="card-text">{{ course.course_description }}</p>
+                            </div>
+                            <!-- Course creation date -->
+                            <div class="card-footer text-muted text-center">
+                                <small>Created on: {{ course.created_at }}</small>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

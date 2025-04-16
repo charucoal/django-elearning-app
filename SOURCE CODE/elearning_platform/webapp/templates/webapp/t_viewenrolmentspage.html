@@ -1,0 +1,52 @@
+{% extends './t_coursesettingspage.html' %}
+{% block content %}
+<h3><u>Enrolments</u></h3>
+<p>View & remove students from your course enrolment.</p>
+
+<!-- Table displaying student enrolments -->
+<div class="table-responsive">
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Enrollment Date</th>
+                <th>Progress (Assignments Completed)</th>
+                <th>Enrollment Status</th>
+                <th>Remove / Re-Enrol Student</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop through each student in progress_data -->
+            {% for student_id, data in progress_data.items %}
+            <tr>
+                <td>{{ data.student.userinfo.first_name }} {{ data.student.userinfo.middle_name }} {{ data.student.userinfo.last_name }}</td>
+                <td>{{ data.enrol_date }}</td>
+                <td>{{ data.progress|floatformat:0 }}%</td>
+                <td>{{ data.status }}</td>
+
+                <!-- Show Remove button if the student is enrolled, else show Add Back button -->
+                {% if data.status != 'removed' %}
+                <td>
+                    <!-- Form to remove the student from enrollment -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ student_id }}">
+                        <input type="submit" name="action" value="REMOVE" class="btn btn-danger">
+                    </form>
+                </td>
+                {% else %}
+                <td>
+                    <!-- Form to add the student back to enrollment -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="student_id" value="{{ student_id }}">
+                        <input type="submit" name="action" value="ADD BACK" class="btn btn-success">
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

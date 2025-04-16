@@ -1,0 +1,115 @@
+{% extends './t_coursesettingspage.html' %}
+{% block content %}
+<h3><u>Delete Items for Course</u></h3>
+<p>Delete specific lessons and materials from the course.</p>
+<div class="row">
+
+    <!-- Section for deleting a lesson -->
+    <div class="col-md-4">
+        <h4>Delete a lesson</h4>
+
+        <!-- Form to delete a lesson -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ lesson_delete_form.as_p }}
+            </div>
+            <input type="submit" name="action" value="Delete Lesson" class="btn btn-danger"><br><br>
+            <p><i>Note: All materials, assignments, and student submissions associated with the lesson will be deleted if a lesson is deleted.</i></p>
+        </form>
+    </div>
+
+    <!-- Section for deleting a material from an existing lesson -->
+    <div class="col-md-4">
+        <h4>Delete a material from an existing lesson</h4>
+
+        <!-- Form for deleting a material -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ material_delete_form.as_p }}
+            </div>
+
+            <!-- JavaScript for dynamically updating the available materials when a lesson is selected -->
+            <script type="text/javascript">
+                document.getElementById("id_lesson").addEventListener("change", function() {
+                    var lesson_id = this.value;
+                    var name_field = document.getElementById("id_name");
+                    name_field.innerHTML = '';  // Clear existing options
+
+                    // Fetch materials associated with the selected lesson
+                    if (lesson_id) {
+                        fetch(`/get-materials/${lesson_id}/`)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log("Materials for selected lesson:", data);
+
+                                // Add "Select a Material" as a default option
+                                name_field.innerHTML = '<option value="">Select a Material</option>';
+
+                                // Loop through the materials and add them as options
+                                data.materials.forEach(function(material) {
+                                    var option = document.createElement("option");
+                                    option.value = material.material_id;  // Use material_id as the value
+                                    option.textContent = material.name;  // Use material name as the display text
+                                    name_field.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Error fetching materials:", error);
+                            });
+                    }
+                });
+            </script>
+            <input type="submit" name="action" value="Delete Material" class="btn btn-danger">
+        </form>
+    </div>
+    
+    <!-- Section for deleting an assignment from an existing lesson -->
+    <div class="col-md-4">
+        <h4>Delete an assignment from an existing lesson</h4>
+
+        <!-- Form for deleting an assignment -->
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ assignment_delete_form.as_p }}
+            </div>
+
+            <!-- JavaScript for dynamically updating the available assignments when a lesson is selected -->
+            <script type="text/javascript">
+                document.getElementById("id_lesson_assignment").addEventListener("change", function() {
+                    var lesson_id = this.value;
+                    var name_field = document.getElementById("id_name_assignment");
+                    name_field.innerHTML = '';  // Clear existing options
+
+                    // Fetch assignments associated with the selected lesson
+                    if (lesson_id) {
+                        fetch(`/get-assignments/${lesson_id}/`)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log("Assignments for selected lesson:", data);
+
+                                // Add "Select an Assignment" as a default option
+                                name_field.innerHTML = '<option value="">Select an Assignment</option>';
+
+                                // Loop through the assignments and add them as options
+                                data.assignments.forEach(function(assignment) {
+                                    var option = document.createElement("option");
+                                    option.value = assignment.assign_id;  // Use assignment_id as the value
+                                    option.textContent = assignment.name;  // Use assignment name as the display text
+                                    name_field.appendChild(option);
+                                });
+                            })
+                            .catch(error => {
+                                console.error("Error fetching assignments:", error);
+                            });
+                    }
+                });
+            </script>
+            <input type="submit" name="action" value="Delete Assignment" class="btn btn-danger">
+        </form>
+    </div>
+</div>
+{% endblock %}
+

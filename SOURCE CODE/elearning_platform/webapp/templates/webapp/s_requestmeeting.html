@@ -1,0 +1,128 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+    {% include "./s_header.html" %}
+    <body>
+        <div class="container">
+            <h2>Request & View Meetings</h2>
+            <br>
+            
+            <!-- Request a Meeting Section -->
+            <div class="mb-4">
+                <h3>Request a meeting</h3>
+                <p class="mt-3">Note: Meeting description without reason and timing requests will not be entertained by teachers.</p>
+                <!-- Success/error message displayed -->
+                {% if messages %}
+                    {% for message in messages %}
+                        <p><b>{{ message }}</b></p>
+                    {% endfor %}
+                {% endif %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.as_p }}
+                    </div>
+                    <button type="submit" name="action" class="search-button">Request</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- View All Meetings' Status -->
+            <h3>View your meeting status</h3>
+
+            <!-- Uses a custom filter to show current time -->
+            <p>Current time: {% current_time %}</p>
+            <hr>
+        
+            <!-- Upcoming Meetings' Details -->
+            <div class="mb-4">
+                <h4>Upcoming</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Description</th>
+                            <th>Scheduled Time</th>
+                            <th>Duration (mins)</th>
+                            <th>Password</th>
+                            <th>Meeting Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meet in accepted_requests %}
+                            {% for meeting in meet.meeting_details.all %}
+                                <tr>
+                                    <td>{{ meet.teacher.userinfo.display_name }}</td>
+                                    <td>{{ meet.req_description }}</td>
+                                    <td>{{ meeting.start_datetime }}</td>
+                                    <td>{{ meeting.duration_minutes }}</td>
+                                    <td><b>{{ meeting.password }}</b></td>
+                                    <td>
+                                        <!-- If meeting is open, give button to join meeting -->
+                                        {% if meeting.meeting_status == "open" %}
+                                            <button class="btn btn-primary"><a class="text-white text-decoration-none" href="../../join/meeting/?meeting_id={{ meeting.meeting_id }}">Join</a></button>
+                                        {% else %}
+                                            {{ meeting.meeting_status }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <hr>
+
+            <!-- Pending Meetings -->
+            <div class="mb-4">
+                <h4>Pending</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Description</th>
+                            <th>Request Sent On</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meet in pending_requests %}
+                            <tr>
+                                <td>{{ meet.teacher.userinfo.display_name }}</td>
+                                <td>{{ meet.req_description }}</td>
+                                <td>{{ meet.created_at }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <hr>
+        
+            <!-- Declined Meetings -->
+            <div class="mb-4">
+                <h4>Declined</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Teacher</th>
+                            <th>Description</th>
+                            <th>Request Sent On</th>
+                            <th>Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for meet in declined_requests %}
+                            <tr>
+                                <td>{{ meet.teacher.userinfo.display_name }}</td>
+                                <td>{{ meet.req_description }}</td>
+                                <td>{{ meet.created_at }}</td>
+                                <td>{{ meet.status_desc }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

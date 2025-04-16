@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+    {% if user.userinfo.user_type == "student" %}
+        <!-- student-specific header -->
+        {% include "./s_header.html" %}
+    {% else %}
+        <!-- teacher-specific header -->
+        {% include "./t_header.html" %}
+    {% endif %}
+    <body>
+        {% if is_authenticated == False %}
+            <!-- Display any messages (errors or success) -->
+            <div class="d-flex justify-content-center align-items-center">
+            {% if messages %}
+                {% for message in messages %}
+                    <p><b>{{ message }}</b></p>
+                {% endfor %}
+            {% endif %}
+            </div>
+
+            <!-- Display password prompt for users to join the meeting -->
+            <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <label for="password">Enter meeting password:</label>
+                    <input type="password" id="password" name="password" placeholder="Enter password" required>
+                    <input class="search-button" type="submit" value="Join Meeting">
+                </form>
+            </div>
+            
+        {% else %}
+            <!-- Meeting details and chat interface for authenticated users -->
+            <div class="d-flex justify-content-center" style="height: 110vh;">
+                
+                <!-- Chat interface for messaging during the meeting -->
+                <div>
+                    <h2 class="text-center">E-Meet</h2>
+                    <p class="text-center"><b>Disclaimer:</b> history of chats are not saved, please take screenshots if required.</p>
+                    <p>
+                        Teacher: {{ meeting_details.request.teacher.userinfo.display_name }} | 
+                        Student: {{ meeting_details.request.student.userinfo.display_name }} <br>
+                        Duration: {{ meeting_details.duration_minutes }} mins <br><br>
+                        Subject of Meeting: {{ meeting_details.request.req_description }}
+                    </p>      
+                    
+                    <div>
+                        <textarea id="chat-log" cols="100" rows="20" class="form-control mb-2"></textarea><br>
+                        <div class="d-flex">
+                            <input id="chat-message-input" type="text" size="100" placeholder="Type a message" class="form-control mb-2 me-2">
+                            <input id="chat-message-submit" type="button" value="Send" class="search-button mb-2">
+                        </div>
+                    </div>
+            
+                    {% if user.userinfo.user_type == "teacher" %}
+                    <!-- End meeting button for the teacher -->
+                    <form method="POST" class="mt-3">
+                        {% csrf_token %}
+                        <input type="hidden" action="end-meeting">
+                        <button id="endMeetingButton" type="submit" name="action" value="end-meeting" class="filter-button">End meeting</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {{ meeting_details.meeting_id|json_script:"room-name" }}
+            {{ user.userinfo.display_name|json_script:"user-name" }}
+            {{ user.userinfo.user_type|json_script:"user-type" }}
+
+            <script>
+                // Fetch the room name from the JSON script tag
+                const roomName = JSON.parse(document.getElementById('room-name').textContent);
+                const userName = JSON.parse(document.getElementById('user-name').textContent);
+                const userType = JSON.parse(document.getElementById('user-type').textContent);
+                console.log("Room Name:", roomName);
+                console.log(userName);
+                
+                // Modify the WebSocket URL to use the roomName for this specific meeting
+                const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/meeting/' + roomName + '/');
+
+                console.log("WebSocket URL:", chatSocket.url);
+
+                chatSocket.onopen = function(e) {
+                    console.log("WebSocket connection established.");
+                };
+
+                chatSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    if (data.redirect) {
+                        alert("This meeting has been ended. Redirecting...");
+                        if (userType == "student")
+                        {
+                            window.location.href = "/student/meeting/request";  
+                        }
+                        else
+                        {
+                            window.location.href = "/teacher/meeting/manage";  
+                        }
+                    }
+                    else
+                    {
+                        document.querySelector('#chat-log').value += (data.name + ": " + data.message + '\n');
+                    }
+                };
+
+                chatSocket.onclose = function(e) {
+                    console.error('Chat socket closed unexpectedly');
+                };
+
+                document.querySelector('#chat-message-input').focus();
+                document.querySelector('#chat-message-input').onkeyup = function(e) {
+                    if (e.keyCode === 13) {  // Enter key
+                        document.querySelector('#chat-message-submit').click();
+                    }
+                };
+
+                document.querySelector('#chat-message-submit').onclick = function(e) {
+                    const messageInputDom = document.querySelector('#chat-message-input');
+                    const message = messageInputDom.value;
+
+                    if (chatSocket.readyState === WebSocket.OPEN) {
+                        chatSocket.send(JSON.stringify({
+                            'name': userName,
+                            'message': message
+                        }));
+                    } else {
+                        console.error("WebSocket is not open yet.");
+                    }
+
+                    messageInputDom.value = '';
+                };
+
+                // Get the "End meeting" button
+                const endMeetingButton = document.getElementById('endMeetingButton');
+
+                // Listen for the button click
+                endMeetingButton.addEventListener('click', () => {
+                    // Send a message to the server to end the meeting
+                    chatSocket.send(JSON.stringify({ type: "end_meeting" }));
+                });
+            </script>
+        {% endif %}
+        {% include "./footer.html" %}
+    </body>
+</html>

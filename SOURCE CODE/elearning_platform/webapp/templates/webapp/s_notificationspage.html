@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <!-- Include student header -->
+    {% include "./s_header.html" %}
+    <body>
+        <div class="container">
+            <h2>Notifications</h2><br>
+            <div class="row">
+                <!-- Forum Replies Notifications -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>Forum Replies</strong></td></tr>
+                        {% for reply in forum %}
+                            <tr><td>{{ reply.message }}<i class="text-end d-block" style="color: #ababab;">{{ reply.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <!-- New Materials Notifications -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>Materials</strong></td></tr>
+                        {% for material in materials %}
+                            <tr><td>{{ material.message }}<i class="text-end d-block" style="color: #ababab;">{{ material.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+                <!-- E-meeting Updates Notifications -->
+                <div class="col-md-4">
+                    <table class="table table-bordered custom-border">
+                        <tr><td><strong>E-meeting Updates</strong></td></tr>
+                        {% for meeting in e_meetings %}
+                            <tr><td>{{ meeting.message }}<i class="text-end d-block" style="color: #ababab;">{{ meeting.created_at }}</i></td></tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

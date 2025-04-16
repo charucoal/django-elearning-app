@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    {% include "./t_header.html" %}
+    <body>
+        <div class="container">
+            <h2>Create a new course</h2><br>
+
+            <!-- Form for creating a new course -->
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input class="search-button" type="submit" name="action" value="Create">
+            </form>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

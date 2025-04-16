@@ -1,0 +1,165 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+    {% include "./s_header.html" %}
+    <body>
+        <div>
+            <!-- Display the course header image and course details -->
+            <img src="/media/{{ course_profile.course_header_picture }}" width="100%" height="130px">
+            <br><br>
+            <h2>{{ course_profile.course_name }}</h2>
+            <p>{{ course_profile.teacher.userinfo.display_name }} • {{ course_profile.course_description }}</p>
+        </div>
+        <div>
+            <!-- Form for the student to interact with the course -->
+            <form method="POST">
+                {% csrf_token %}
+                <div>
+                    {% if enroll_status == "enrolled" %}
+                        <!-- Request E-meeting button and actions for enrolled status -->
+                        <a href="{% url 'student-request-meeting' %}" class="btn btn-info btn-sm text-decoration-none text-white">Request an E-meeting</a>
+                        <input type="submit" name="action" value="Unenroll" class="btn btn-danger btn-sm">
+                        <input type="submit" name="action" value="Discontinue Course" class="btn btn-warning btn-sm">
+                    {% elif enroll_status == "unenrolled" %}
+                        <!-- Continue course or unenroll actions for unenrolled status -->
+                        <input type="submit" name="action" value="Continue Course" class="btn btn-success btn-sm">
+                        <input type="submit" name="action" value="Unenroll" class="btn btn-danger btn-sm">
+                    {% elif enroll_status != "removed" %}
+                        <!-- Enroll action if the student is not removed from the course -->
+                        <input type="submit" name="action" value="Enroll" class="btn btn-primary btn-sm">
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        {% if enroll_status == "enrolled" or enroll_status == "unenrolled" %}
+        <br>
+        <!-- Warning note for unenrolling from the course -->
+        <p><b>Note: Unenrolling from the course deletes all assignment submissions.</b></p>
+        <div>
+            <h2>Lessons</h2>
+            <!-- Loop through the lessons in the course -->
+            {% for lesson in lessons %}
+            <div>
+                <h3>{{ lesson.lesson_title }}</h3>
+                <p>{{ lesson.lesson_description }}</p>
+
+                <!-- Display Materials for the lesson -->
+                {% if lesson.materialupload_set.all %}
+                    <h4>Materials</h4>
+                    <ul>
+                        <!-- Loop through each material -->
+                        {% for material in lesson.materialupload_set.all %}
+                            <li>
+                                <strong>{{ material.name }}</strong> • {{ material.description }}<br>
+                                <a href="/media/{{ material.upload_file.name }}" download>Download Material</a>
+                            </li><br>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <!-- Display Assignments for the lesson -->
+                {% if lesson.assignments.all %}
+                    <h4>Assignments</h4>
+                    <table class="assignment table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>Assignment Name</th>
+                                <th>Instructions</th>
+                                <th>File</th>
+                                <th>Deadline</th>
+                                <th>Submission Status</th>
+                                <th>Actions</th>
+                                <th>Submission File</th>
+                                <th>Submitted On</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Loop through each assignment -->
+                            {% for assignment in lesson.assignments.all %}
+                                <tr>
+                                    <td>{{ assignment.name }}</td>
+                                    <td>{{ assignment.description }}</td>
+                                    <td><a href="/media/{{ assignment.upload_file.name }}" download>View Assignment File</a></td>
+                                    <td>{{ assignment.deadline }}</td>
+                                    
+                                    <!-- Check if the user has submitted the assignment -->
+                                    {% with submission=user_submissions|get_s:assignment.assign_id %}
+                                    {% if submission.submission_status == "submitted" %}
+                                        <td>Submitted</td>
+                                        {% if assignment.deadline|get_time %}
+                                            <td>
+                                                <!-- Allow re-upload if within the deadline -->
+                                                <form method="POST" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="assignment_id" value="{{ assignment.assign_id }}">
+                                                    <input type="file" name="reupload_file"><br>
+                                                    <button type="submit" name="action" value="reupload" class="btn btn-primary btn-sm">Re-submit</button>
+                                                </form>
+                                            </td>
+                                        {% else %}
+                                            <td>Due date has passed.</td>
+                                        {% endif %}
+                                        <td><a href="/media/{{ submission|submitted_file }}" download>View Submission File</a></td>
+                                        <td>{{ submission.submitted_on }}</td>
+                                    {% else %}
+                                        {% if assignment.assignment_status %}
+                                            <td>Not submitted</td>
+                                            <td>
+                                                <!-- Form to upload the assignment -->
+                                                <form method="POST" enctype="multipart/form-data">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="assignment_id" value="{{ assignment.assign_id }}">
+                                                    <input type="file" name="upload_file"><br>
+                                                    <button type="submit" name="action" value="upload" class="btn btn-success btn-sm">Submit</button>
+                                                </form>
+                                            </td>
+                                        {% else %}
+                                            <td>Overdue</td>
+                                            <td>Due date has passed.</td>
+                                        {% endif %}
+                                        <td>-</td>
+                                        <td>-</td>
+                                    {% endif %}
+                                    {% endwith %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div>
+            <hr>
+            <!-- Feedback forum section -->
+            <h2>Feedback Forum</h2>
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input class="search-button" type="submit" name="action" value="Post!">
+            </form>
+            <br>
+            <div class="feedback-table">
+                <!-- Loop through feedbacks and display them -->
+                {% for feedback in feedbacks %}
+                <div class="feedback-row">
+                    <div class="profile-container">
+                        <!-- Display the profile picture and status update of the user -->
+                        <img src="/media/{{ feedback.user.userinfo.profile_picture }}" class="profile-pic">
+                        {% if feedback.user.userinfo.display_status %}
+                        <span class="tooltip-text">{{ feedback.user.userinfo.status_update }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="feedback-details">
+                        <p><strong>{{feedback.user.userinfo.display_name}}</strong> <i>{{feedback.created_at}}</i></p>
+                        <p>{{feedback.feedback}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

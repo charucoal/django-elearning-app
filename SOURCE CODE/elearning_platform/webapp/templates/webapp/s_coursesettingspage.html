@@ -1,0 +1,70 @@
+{% extends './s_profile.html' %}
+{% block content %}
+<h2>Your Courses</h2>
+<p>View all your courses here.</p>
+<p>
+    "Discontinue course" removes courses from the home dashboard.<br>
+    "Remove course" unenrolls you from the course and <b>discards all progress</b>.
+</p>
+<div>
+    <!-- Table displaying the list of courses -->
+    <table class="table table-bordered table-striped table-hover">
+        <thead>
+            <tr>
+                <th><strong>Course Name</strong></th>
+                <th><strong>Teacher</strong></th>
+                <th><strong>Status</strong></th>
+                <th><strong>Action</strong></th>
+                <th><strong>Enrolled On</strong></th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Loop through each course the student is enrolled in -->
+            {% for course in courses %}
+            <tr>
+                 <!-- Course name as a clickable link that redirects to course details -->
+                <td><a href="../courses/?course_id={{course.course.course_id}}">{{course.course.course_name}}</a></td>
+                
+                <!-- Teacher's name -->
+                <td>{{course.course.teacher.userinfo.display_name}}</td>
+
+                <!-- Status of enrollment (either enrolled or unenrolled) -->
+                <td>{{course.enrollment_status}}</td>
+                {% if course.enrollment_status == "enrolled" %}
+                    <td>
+                        <!-- Form to discontinue or remove the course -->
+                        <form method="POST" action="{% url 'student-profile-courses' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="course_id" value="{{ course.course_id }}">
+                            
+                            <!-- Discontinue Course Button -->
+                            <input type="submit" value="Discontinue Course" name="action" class="btn btn-warning btn-sm">
+                            
+                            <!-- Remove Course Button -->
+                            <input type="submit" value="Remove Course" name="action" class="btn btn-danger btn-sm">
+                        </form>
+                    </td>
+                {% elif course.enrollment_status == "unenrolled" %}
+                    <td>
+                         <!-- Form to continue or remove the course for unenrolled students -->
+                        <form method="POST" action="{% url 'student-profile-courses' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="course_id" value="{{ course.course_id }}">
+
+                            <!-- Continue Course Button -->
+                            <input type="submit" value="Continue Course" name="action" class="btn btn-success btn-sm">
+                            
+                            <!-- Remove Course Button -->
+                            <input type="submit" value="Remove Course" name="action" class="btn btn-danger btn-sm">
+                        </form>
+                    </td>
+                {% endif %}
+
+                <!-- Display the enrollment date of the course -->
+                <td>{{course.created_at}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

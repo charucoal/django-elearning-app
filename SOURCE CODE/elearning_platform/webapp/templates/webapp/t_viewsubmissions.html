@@ -1,0 +1,46 @@
+{% extends './t_coursesettingspage.html' %}
+{% load custom_filters %}
+{% block content %}
+
+<h3><u>Assignment Submissions</u></h3>
+<p>View all assignment submissions here.</p>
+
+<!-- Loop through each assignment and its corresponding submissions -->
+{% for assignment, submissions in grouped_submissions.items %}
+    <div class="assignment-group mb-4">
+
+        <!-- Assignment name and details -->
+        <h4>{{ assignment.name }}</h4>
+        <p><strong>{{ assignment.deadline }}</strong> • {{ assignment.description }}</p>
+
+        <!-- Display submission count with a custom filter -->
+        <p><strong>Submissions:</strong> {{ submissions|submission_count }} </p>
+        
+        <!-- Table to display each submission for the assignment -->
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Submission ID</th>
+                        <th>Student Name (ID)</th>
+                        <th>File</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through the submissions for the current assignment -->
+                    {% for submission in submissions %}
+                    {% if submission.submission_status == "submitted" %}
+                        <!-- Display details of each submitted submission -->
+                        <tr>
+                            <td>{{ submission.upload_id }}</td>
+                            <td>{{ submission.student.userinfo.first_name }} {{ submission.student.userinfo.last_name }} ({{ submission.student.userinfo.user_id }})</td>
+                            <td><a href="{{ submission.upload_file.url }}">Download</a></td>
+                        </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,101 @@
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+    {% include "./t_header.html" %}
+    <body>
+        <!-- Main container for managing meetings -->
+        <div class="container mt-4">
+            <h2>Manage Meetings</h2>
+
+            <!-- Display current time using a custom filter -->
+            <p>Current time: {% current_time %}</p><br>
+
+            <!-- Upcoming meetings section -->
+            <h4>Upcoming Meetings</h4><br>
+            <table class="table table-bordered table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Student</th>
+                        <th>Description</th>
+                        <th>Scheduled Time</th>
+                        <th>Duration (mins)</th>
+                        <th>Password</th>
+                        <th>Meeting Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through accepted meetings and display each -->
+                    {% for meet in accepted %}
+                        {% for meeting in meet.meeting_details.all %}
+                            <tr>
+                                <td>{{ meet.student.userinfo.display_name }}</td>
+                                <td>{{ meet.req_description }}</td>
+                                <td>{{ meeting.start_datetime }}</td>
+                                <td>{{ meeting.duration_minutes }}</td>
+                                <td><b>{{ meeting.password }}</b></td>
+                                
+                                <!-- Display "Join" button if meeting is open, otherwise show status -->
+                                {% if meeting.meeting_status == "open" %}
+                                    <td>
+                                        <a href="../../join/meeting/?meeting_id={{ meeting.meeting_id }}" class="btn btn-primary text-white text-decoration-none">Join</a>
+                                    </td>
+                                {% else %}
+                                    <td>{{ meeting.meeting_status }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pending meetings section -->
+        <div class="container mt-4">
+            <hr>
+            <h4>Pending Meetings</h4><br>
+            <table class="table table-bordered table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Student</th>
+                        <th>Description</th>
+                        <th>Accept</th>
+                        <th>Decline</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through pending meetings and display actions -->
+                    {% for item in form_data %}
+                    <tr>
+                        <td>{{ item.meeting.student.userinfo.display_name }}</td>
+                        <td>{{ item.meeting.req_description }}</td>
+                        
+                        <td>
+                            <!-- Form to accept the meeting request -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    {{ item.accept_form.as_p }}
+                                </div>
+                                <input type="hidden" name="request_id" value="{{ item.meeting.request_id }}">
+                                <input type="submit" name="action" value="Accept" class="btn btn-success">
+                            </form>
+                        </td>
+                        <td>
+                            <!-- Form to decline the meeting request -->
+                            <form method="POST" class="d-inline">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    {{ item.decline_form.as_p }}
+                                </div>
+                                <input type="hidden" name="request_id" value="{{ item.meeting.request_id }}">
+                                <input type="submit" name="action" value="Decline" class="btn btn-danger">
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "./footer.html" %}
+    </body>
+</html>

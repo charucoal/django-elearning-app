@@ -1,0 +1,40 @@
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voyage • Teacher</title>
+
+    <!-- Bootstrap CSS and Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+</head>
+<header>
+    <!-- Logout Button -->
+    <p class=" d-flex justify-content-end"><a class="logout-button" href="{% url 'logout'%}">Logout</a></p>
+    
+    <nav class="d-flex justify-content-between align-items-center position-relative">
+        <!-- Left section: logo -->
+        <div class="d-flex">
+            <h1><b>VOYAGE</b></h1>
+        </div>
+
+        <!-- Centered navigation links -->
+        <div class="position-absolute start-50 translate-middle-x text-center">
+            <a href="{% url 'teacher-home' %}" class="mx-2">Home</a>
+            <a href="{% url 'teacher-notifications' %}" class="mx-2">Notifications</a>
+            <a href="{% url 'teacher-manage-meetings' %}" class="mx-2">Meetings</a>
+            <a href="{% url 'teacher-profile-settings' %}" class="mx-2">Profile</a>
+        </div>
+
+        <!-- Right section: search icon -->
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'teacher-search-person' %}" class="mx-2">
+                <i class="bi bi-search"></i> People
+            </a>              
+        </div>
+    </nav>
+    <hr>
+</header>
